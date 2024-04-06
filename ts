@@ -25,8 +25,11 @@ if [ "$#" -eq 0 ]; then
         exit $SESSION_NOT_SELECTED_ERROR
     fi
 
-    if [ $SESSION ]; then
-        tmux attach-session -t $SESSION
+    # using "" around variable ensures spaces are preserved in SESSION
+    # and uses the entire string as session name and not just first word
+    if [ "$SESSION" ]; then
+        tmux attach-session -t "$SESSION"
+        exit $EXIT_SUCCESS
     fi
 else
     while getopts clhn: flag
@@ -39,6 +42,8 @@ else
             n)
                 SESSION_NAME="${OPTARG:-$CWD}"
                 DIR=${OPTARG##*/}
+                echo $DIR
+                echo $SESSION_NAME
                 tmux has -t "$DIR" 2> /dev/null
                 if [ "$?" = "0" ]; then
                     echo "ERROR: Session already Exists!"
