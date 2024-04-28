@@ -42,10 +42,9 @@ else
             n)
                 SESSION_NAME="${OPTARG:-$CWD}"
                 DIR=${OPTARG##*/}
-                # echo $DIR
-                # echo $SESSION_NAME
-                tmux has -t "$DIR" 2> /dev/null
-                if [ "$?" = "0" ]; then
+
+                # check if the session already exists
+                if tmux list-sessions | awk -F: '{print $1}' | grep -q "^${DIR}$"; then
                     echo "ERROR: Session already Exists!"
                     exit $SESSION_ALREADY_EXISTS
                 else
@@ -58,11 +57,10 @@ else
                 ;;
             a)
                 SESSION_NAME="${OPTARG:-$CWD}"
-                DIR=${OPTARG##*/}
-                # echo $DIR
-                # echo $SESSION_NAME
-                tmux has -t "$DIR" 2> /dev/null
-                if [ "$?" = "0" ]; then
+                DIR="${OPTARG##*/}"
+
+                # check if the session already exists
+                if tmux list-sessions | awk -F: '{print $1}' | grep -q "^${DIR}$"; then
                     echo "ERROR: Session already Exists!"
                     exit $SESSION_ALREADY_EXISTS
                 else
