@@ -15,12 +15,12 @@ if [ "$#" -eq 0 ]; then
     STATUS=$?
 
     # status check for when nothing is selected in fzf
-    if [ $STATUS -eq 130 ];then
+    if [ $STATUS -eq 130 ]; then
         # echo "No session selected"
         exit $SESSION_NOT_SELECTED_ERROR
     fi
 
-    if [ $STATUS -eq 1 ];then
+    if [ $STATUS -eq 1 ]; then
         echo "Session Not Found!"
         exit $SESSION_NOT_FOUND_ERROR
     fi
@@ -50,7 +50,7 @@ else
                 else
                     if [ -d "$OPTARG" ]; then
                         cd "$OPTARG"
-                        tmux new-session -s "$DIR"
+                        tmux new-session -s "$DIR" -c "$PWD"
                     fi
                 fi
                 exit $EXIT_SUCCESS
@@ -66,13 +66,13 @@ else
                 else
                     if [ -d "$OPTARG" ]; then
                         cd "$OPTARG"
-                        tmux new-session -d -s "$DIR"
+                        tmux new-session -d -s "$DIR" -c "$PWD"
                     fi
                 fi
                 exit $EXIT_SUCCESS
                 ;;
             c)
-                tmux new-session -s "$CWD"
+                tmux new-session -s "$CWD" -c "$PWD"
                 ;;
             h)
                 echo "USAGE ts -flag [optional path]"
@@ -88,6 +88,7 @@ else
                 ;;
             \?)
                 echo "Invalid option: -$OPTARG" >&2
+                echo "USAGE ts [-flag] [-h] [optional path]"
                 exit $INVALID_FLAG_ERROR
                 ;;
         esac
