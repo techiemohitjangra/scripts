@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 # Script to use fzf to find and attach tmux session
 
 # ERROR CODES
@@ -28,7 +28,11 @@ if [ "$#" -eq 0 ]; then
     # using "" around variable ensures spaces are preserved in SESSION
     # and uses the entire string as session name and not just first word
     if [ "$SESSION" ]; then
-        tmux attach-session -t "$SESSION"
+        if [[ -z "${TMUX}" ]]; then
+            tmux attach-session -t "$SESSION"
+        else
+            tmux switch-client -t "$SESSION"
+        fi
         exit $EXIT_SUCCESS
     fi
 else
@@ -50,7 +54,16 @@ else
                 else
                     if [ -d "$OPTARG" ]; then
                         cd "$OPTARG"
-                        tmux new-session -s "$DIR" -c "$PWD"
+                        # checks if a tmux session is now attached
+                        if [[ -z "${TMUX}" ]]; then # true, if not in tmux session
+                            # creates and attaches to session for given directory
+                            tmux new-session -s "$DIR" -c "$PWD"
+                        else
+                            # only creates a session for given directory
+                            tmux new-session -d -s "$DIR" -c "$PWD"
+                            # switch to the newly created session
+                            tmux switch-client -t "$DIR"
+                        fi
                     fi
                 fi
                 exit $EXIT_SUCCESS
@@ -66,13 +79,24 @@ else
                 else
                     if [ -d "$OPTARG" ]; then
                         cd "$OPTARG"
+                        # only creates a session for given directory,
+                        # but does not attach to it
                         tmux new-session -d -s "$DIR" -c "$PWD"
                     fi
                 fi
                 exit $EXIT_SUCCESS
                 ;;
             c)
-                tmux new-session -s "$CWD" -c "$PWD"
+                # checks if a tmux session is now attached
+                if [[ -z "${TMUX}" ]]; then # true, if not in tmux session
+                    # creates and attaches to session for current directory
+                    tmux new-session -s "$CWD" -c "$PWD"
+                else
+                    # only creates a session for current directory
+                    tmux new-session -d -s "$CWD" -c "$PWD"
+                    # switch to the newly created session
+                    tmux switch-client -t "$CWD"
+                fi
                 ;;
             h)
                 echo "USAGE ts -flag [optional path]"
