@@ -10,24 +10,24 @@ SESSION_ALREADY_EXISTS=4
 
 CWD=${PWD##*/}
 
-if [ "$#" -eq 0 ]; then
-    SESSION=`tmux ls | awk -F ':' '{print $1}'| tr -d ':' | fzf `
+if [[ "$#" -eq 0 ]]; then
+    SESSION=`tmux ls 2>/dev/null | awk -F ':' '{print $1}'| tr -d ':' | fzf `
     STATUS=$?
 
     # status check for when nothing is selected in fzf
-    if [ $STATUS -eq 130 ]; then
+    if [[ $STATUS -eq 130 ]]; then
         # echo "No session selected"
         exit $SESSION_NOT_SELECTED_ERROR
     fi
 
-    if [ $STATUS -eq 1 ]; then
+    if [[ $STATUS -eq 1 ]]; then
         echo "Session Not Found!"
         exit $SESSION_NOT_FOUND_ERROR
     fi
 
     # using "" around variable ensures spaces are preserved in SESSION
     # and uses the entire string as session name and not just first word
-    if [ "$SESSION" ]; then
+    if [[ "$SESSION" ]]; then
         if [[ -z "${TMUX}" ]]; then
             tmux attach-session -t "$SESSION"
         else
@@ -40,7 +40,7 @@ else
     do
         case "${flag}" in
             l)
-                tmux ls | awk -F ':' '{print $1}' | tr -d ':'
+                tmux ls 2>/dev/null | awk -F ':' '{print $1}' | tr -d ':'
                 exit $EXIT_SUCCESS
                 ;;
             n)
@@ -48,11 +48,12 @@ else
                 DIR=${OPTARG##*/}
 
                 # check if the session already exists
-                if tmux list-sessions | awk -F: '{print $1}' | grep -q "^${DIR}$"; then
+                # if tmux list-sessions | awk -F: '{print $1}' | grep -q "^${DIR}$"; then
+                if tmux has-session -t "$DIR" 2>/dev/null; then
                     echo "ERROR: Session already Exists!"
                     exit $SESSION_ALREADY_EXISTS
                 else
-                    if [ -d "$OPTARG" ]; then
+                    if [[ -d "$OPTARG" ]]; then
                         cd "$OPTARG"
                         # checks if a tmux session is now attached
                         if [[ -z "${TMUX}" ]]; then # true, if not in tmux session
@@ -73,7 +74,8 @@ else
                 DIR="${OPTARG##*/}"
 
                 # check if the session already exists
-                if tmux list-sessions | awk -F: '{print $1}' | grep -q "^${DIR}$"; then
+                # if tmux list-sessions | awk -F: '{print $1}' | grep -q "^${DIR}$"; then
+                if tmux has-session -t "$DIR" 2>/dev/null; then
                     echo "ERROR: Session already Exists!"
                     exit $SESSION_ALREADY_EXISTS
                 else
